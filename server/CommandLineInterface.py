@@ -2,6 +2,7 @@ import colorama
 from Server import Server
 import os
 import sys
+import socket
 
 class CommandLineInterface:
     """A class representing a command-line interface that handles the user input.
@@ -40,7 +41,7 @@ class CommandLineInterface:
 
         user = os.getlogin().lower()
 
-        prompt = f"{user}@sazo> "
+        prompt = f"{user}@lons> "
         print("Type help to see options")
 
         while True:
@@ -51,7 +52,7 @@ class CommandLineInterface:
             if user_input == '':
                 pass
             if user_input == 'help':
-                print("test")
+                print(self.server.sessions[self.server.clients[0]].getpeername())
             if user_input == 'exit':
                 self.server.stop()
                 sys.exit(1)

@@ -1,5 +1,8 @@
 import socket
 import threading
+import time
+from Client import Client
+from NetworkDataHandler import NetworkDataHandler
 
 class Server:
     """A class representing the Server that will handle the socket connections with the clients.
@@ -11,7 +14,7 @@ class Server:
         port (int): port that will host the Server in the network. By default, 1337.
     """
 
-    _instance = None  # Singleton instance
+    _instance = None
 
     def __init__(self, host="0.0.0.0", port=1337):
         if self._instance is not None:
@@ -19,7 +22,8 @@ class Server:
         else:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.settimeout(10)
-            self.sessions = []
+            self.clients = []
+            self.sessions = {}
             self.listening = False
             self.server_thread = None
             self.host = host
@@ -45,8 +49,25 @@ class Server:
                     if not self.listening:
                         break
                     continue
-                self.sessions.append((connection, client_endpoint))
-                print("Client #{} - CONNECTED <{}:{}>\n".format(len(self.sessions),client_endpoint[0],client_endpoint[1]))
+                new_client = Client(connection, client_endpoint)
+                self.sessions[new_client] = connection
+                self.clients.append(new_client)
+                print("Client #{} - CONNECTED <{}:{}>".format(len(self.sessions),client_endpoint[0],client_endpoint[1]))
+
+        def handle_disconnected():
+            while self.listening:
+                # Sleep for 1 second between clients to avoid overloading the server
+                time.sleep(1)
+
+                # Check if each client connection is still active
+                for client in self.clients:
+                    connection = self.sessions[client]
+                    try:
+                        connection.sendall(b'net')
+                    except ConnectionAbortedError:
+                        # Client connection has been closed
+                        self.clients.remove(client)
+                        print(f"Connection with client {client} has been closed")
 
         endpoint = (self.host, self.port)
         self.socket.bind(endpoint)
@@ -56,6 +77,8 @@ class Server:
         self.listening = True
 
         self.server_thread = threading.Thread(target=handle_client_connection)
+        self.disconnected_thread = threading.Thread(target=handle_disconnected)
+        self.disconnected_thread.start()
         self.server_thread.start()
 
     def stop(self):
@@ -63,9 +86,39 @@ class Server:
         print("Stopping server...")
         self.listening = False
         self.server_thread.join()
+        self.disconnected_thread.join()
         self.socket.close()
         print("Server stopped.")
 
-    def getClients(self):
-        """Returns the array of current clients bound to the Server"""
-        return self.sessions
+    def sendTo(self, client, data):
+        """Sends data to a specific client.
+
+        Args:
+            client (Client): The client to send the data to.
+            data (bytes): The data to send through the socket.
+        """
+        connection = self.sessions[client]
+        connection.sendall(data)
+
+    def recvFrom(self, client):
+        """Receives data from a specific client.
+
+        Args:
+            client (Client): The client to receive the data from.
+
+        Returns:
+            bytes: The data received through the socket.
+        """
+        connection = self.clients[client]
+        data = b''
+        while True:
+            try:
+                chunk = connection.recv(1024)
+                if not chunk:
+                    break
+                data += chunk
+            except:
+                break
+        return data
+
+
