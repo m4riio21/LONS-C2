@@ -1,4 +1,6 @@
 import socket
+import os
+import subprocess
 
 class Client:
     """A class representing a client that connects to the server via sockets.
@@ -19,6 +21,31 @@ class Client:
         self.connection = connection
         self.host = address[0]
         self.port = address[1]
+
+    def getClientOs(self):
+        """
+        Gets the OS of the client (Windows / Linux)
+        """
+        ttl = None
+        if os.name == 'nt':
+            result = subprocess.run(["ping", "-n", "1", f"{self.host}"], capture_output=True, text=True)
+            ttl_match = re.search(r"TTL=(\d+)", result.stdout)
+            ttl = ttl_match.group(1)
+        elif os.name == 'posix':
+            result = subprocess.run(["ping", "-c", "1", f"{self.host}"], capture_output=True, text=True)
+            ttl_match = re.search(r"TTL=(\d+)", result.stdout)
+            ttl = ttl_match.group(1)
+
+        if ttl == None:
+            return None
+        else:
+            if ttl >= 127:
+                return "Windows"
+            else:
+                if ttl <= 65:
+                    return "Linux"
+                else:
+                    return None
 
     def __str__(self):
         """Returns a string representation of the client in the format host:port"""

@@ -1,5 +1,7 @@
+from colorama import init, Fore, Back, Style
 import socket
 import threading
+import select
 import time
 from Client import Client
 from NetworkDataHandler import NetworkDataHandler
@@ -52,22 +54,27 @@ class Server:
                 new_client = Client(connection, client_endpoint)
                 self.sessions[new_client] = connection
                 self.clients.append(new_client)
-                print("Client #{} - CONNECTED <{}:{}>".format(len(self.sessions),client_endpoint[0],client_endpoint[1]))
+
+                print("Client #{} - CONNECTED <{}:{}>".format(len(self.clients),client_endpoint[0],client_endpoint[1]))
 
         def handle_disconnected():
             while self.listening:
                 # Sleep for 1 second between clients to avoid overloading the server
                 time.sleep(1)
 
-                # Check if each client connection is still active
                 for client in self.clients:
                     connection = self.sessions[client]
+                    connection.settimeout(1)
                     try:
-                        connection.sendall(b'net')
-                    except ConnectionAbortedError:
-                        # Client connection has been closed
-                        self.clients.remove(client)
-                        print(f"Connection with client {client} has been closed")
+                        # Check if each client connection is still active
+                        data = connection.recv(1024)
+                        if not data:
+                            self.clients.remove(client)
+                            print(f"Connection with client {client} has been closed")
+                    except:
+                        pass
+
+
 
         endpoint = (self.host, self.port)
         self.socket.bind(endpoint)
@@ -83,20 +90,35 @@ class Server:
 
     def stop(self):
         """Stops the server from listening to incoming connections"""
-        print("Stopping server...")
+        print(Fore.RED + "Stopping server..." + Style.RESET_ALL)
         self.listening = False
         self.server_thread.join()
         self.disconnected_thread.join()
         self.socket.close()
-        print("Server stopped.")
+        print(Fore.RED + "Server successfully stopped!" + Style.RESET_ALL)
 
-    def sendTo(self, client, data):
+    def getClients(self):
+        """Returns the array of active clients"""
+        ret = []
+        for c in self.clients:
+            ret.append(c.getClientInfo())
+
+        return ret
+
+    def deleteClient(self, pos):
+        """Deletes a client based on position in self.clients"""
+        c = self.clients[pos - 1].getClientInfo()
+        c[0].close()
+        del self.clients[pos - 1]
+
+    def sendTo(self, client_pos, data):
         """Sends data to a specific client.
 
         Args:
             client (Client): The client to send the data to.
             data (bytes): The data to send through the socket.
         """
+        client = self.clients[client_pos]
         connection = self.sessions[client]
         connection.sendall(data)
 
