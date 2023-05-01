@@ -31,10 +31,13 @@ class DownloadFile:
         """
 
         data = server.recvFrom(client)
-
-        f = open(file, 'wb')
-        f.write(data)
-        f.close()
+        try:
+            f = open(file, 'wb')
+            f.write(data)
+            f.close()
+            return True
+        except:
+            return False
 
 
     def execute(self):
@@ -46,10 +49,13 @@ class DownloadFile:
         server = Server.getInstance()
 
         # Ask the client to deliver the specified file
-        askFile(server, self._currentSession - 1, self._remote_file.encode())
+        self.askFile(server, self._currentSession - 1, self._remote_file.encode())
 
         # Gets the file contents and saves it in the local path
-        downloadFile(server, self._currentSession - 1, self._local_file)
+        code = self.downloadFile(server, self._currentSession - 1, self._local_file)
 
-        return f"Done! File {self._remote_file} has been downloaded and saved to {self._local_file}."
+        if code:
+            return f"Done! File {self._remote_file} has been downloaded and saved to {self._local_file}."
+        else:
+            return f"You don't have permission to save the file to {self._local_file}"
 

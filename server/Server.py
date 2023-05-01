@@ -46,12 +46,18 @@ class Server:
             while self.listening:
                 try:
                     connection, client_endpoint = self.socket.accept()
+                    data = connection.recv(3)
                 except socket.timeout:
                     # check for stop flag periodically while waiting for connections
                     if not self.listening:
                         break
                     continue
-                new_client = Client(connection, client_endpoint)
+                if data == b'WIN':
+                    client_os = 'Windows'
+                elif data == b'LIN':
+                    client_os = 'Linux'
+
+                new_client = Client(connection, client_endpoint, client_os)
                 self.sessions[new_client] = connection
                 self.clients.append(new_client)
 
@@ -105,10 +111,17 @@ class Server:
 
         return ret
 
+    def getClient(self, client_pos):
+        return self.clients[client_pos]
+
     def deleteClient(self, pos):
         """Deletes a client based on position in self.clients"""
         c = self.clients[pos - 1].getClientInfo()
+
+        #Get connection
         c[0].close()
+
+        #Remove client from the array
         del self.clients[pos - 1]
 
     def sendTo(self, client_pos, data):
@@ -120,7 +133,7 @@ class Server:
         """
         client = self.clients[client_pos]
         connection = self.sessions[client]
-        connection.sendall(data)
+        connection.send(data)
 
     def recvFrom(self, client):
         """Receives data from a specific client.
@@ -131,7 +144,7 @@ class Server:
         Returns:
             bytes: The data received through the socket.
         """
-        connection = self.clients[client]
+        connection = self.sessions[self.clients[client]]
         data = b''
         while True:
             try:

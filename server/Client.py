@@ -1,5 +1,6 @@
 import socket
 import os
+import re
 import subprocess
 
 class Client:
@@ -11,16 +12,18 @@ class Client:
         connection (socket): The connection object created in the server with socket.accept().
     """
 
-    def __init__(self, connection, address):
+    def __init__(self, connection, address, os):
         """Initializes a new instance of the Client class.
 
         Args:
             connection (socket): The connection object created in the server with socket.accept().
             address (tuple): The address of the client as a tuple (host, port).
+            os (String): A string representing the operative system of the client (Windows / Linux).
         """
         self.connection = connection
         self.host = address[0]
         self.port = address[1]
+        self.os = os
 
     def getClientOs(self):
         """
@@ -35,6 +38,8 @@ class Client:
             result = subprocess.run(["ping", "-c", "1", f"{self.host}"], capture_output=True, text=True)
             ttl_match = re.search(r"TTL=(\d+)", result.stdout)
             ttl = ttl_match.group(1)
+
+        ttl = int(ttl)
 
         if ttl == None:
             return None
@@ -57,4 +62,4 @@ class Client:
         Returns:
             list: A list containing the connection object, host IP and port number.
         """
-        return [self.connection, self.host, self.port]
+        return [self.connection, self.host, self.port, self.os]

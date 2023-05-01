@@ -30,7 +30,9 @@ class Run:
         Receives the stdout of the command sent
         """
 
-        return server.recvFrom(client)
+        data = server.recvFrom(client)
+
+        return data
 
     def execute(self):
         """
@@ -40,9 +42,9 @@ class Run:
         print(f"Executing Submodule {self.name} - {self.description}")
         server = Server.getInstance()
 
-        sendCommand(server, self._currentSession - 1)
+        self.sendCommand(server, self._currentSession - 1)
 
-        stdout = receiveOutput(server, self._currentSession - 1)
+        stdout = self.receiveOutput(server, self._currentSession - 1)
 
-        return stdout
+        return stdout.decode('utf-8')
 

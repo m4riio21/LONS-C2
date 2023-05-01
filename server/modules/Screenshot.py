@@ -25,15 +25,17 @@ class Screenshot:
 
         server.sendTo(client, b'screenshot')
 
-    def downloadFile(self, server, client, file):
+    def saveScreenshot(self, server, client, file):
         """
         Receives the file contents from the socket and writes it into the local file
         """
 
         data = server.recvFrom(client)
 
-        f = open(file, 'wb')
-        f.write(data)
+        # write the image data to a file
+        with open(file, 'wb') as f:
+            f.write(data)
+
         f.close()
 
 
@@ -46,10 +48,10 @@ class Screenshot:
         server = Server.getInstance()
 
         # Ask the client to deliver the specified file
-        askForScreenshot(server, self._currentSession - 1)
+        self.askForScreenshot(server, self._currentSession - 1)
 
         # Gets the file contents and saves it in the local path
-        saveScreenshot(server, self._currentSession - 1, self._local_file)
+        self.saveScreenshot(server, self._currentSession - 1, self._local_file)
 
         return f"Done! Screenshot taken and saved to {self._local_file}"
 

