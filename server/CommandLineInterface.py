@@ -162,6 +162,8 @@ class CommandLineInterface:
                         sess = input("session nº> ")
                         if sess == 'back':
                             valid_session = True
+                        elif sess == '':
+                            pass
                         else :
                             if int(sess) >= 1 and int(sess) <= len(clients):
                                 valid_session = True

@@ -1,5 +1,5 @@
 from Server import Server
-
+import time
 
 class DownloadFile:
     """
@@ -31,13 +31,12 @@ class DownloadFile:
         """
 
         data = server.recvFrom(client)
-        try:
-            f = open(file, 'wb')
+
+        with open(file, 'wb') as f:
             f.write(data)
-            f.close()
-            return True
-        except:
-            return False
+
+        f.close()
+        return True
 
 
     def execute(self):
