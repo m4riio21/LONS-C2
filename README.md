@@ -27,4 +27,14 @@
 
 ### Server
 
+Default port is 1337. User may specify a custom port
+```shell
+$ python main.py [port]
+```
+
+### Client
+
+```shell
+$ python main.py <server_ip> <server_port>
+```
 
