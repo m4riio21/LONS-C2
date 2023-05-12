@@ -8,6 +8,7 @@
 - [Introduction](#introduction)
 - [Features](#features)
 - [Usage](#usage)
+- [Running LONS-C2](#Running LONS-C2)
 
 
 ## Introduction
