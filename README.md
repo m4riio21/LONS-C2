@@ -25,6 +25,12 @@
 
 ## Usage
 
+### Installing requirements
+
+```shell
+$ pip install -r requirements.txt
+```
+
 ### Server
 
 Default port is 1337. User may specify a custom port
