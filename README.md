@@ -7,6 +7,7 @@
 
 - [Introduction](#introduction)
 - [Features](#features)
+- [Usage](#usage)
 
 
 ## Introduction
@@ -22,5 +23,8 @@
 - Retrieve files from clients
 - Take screenshots from clients and visualize them
 
+## Usage
+
+### Server
 
 
