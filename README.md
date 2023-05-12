@@ -9,7 +9,9 @@
 - [Features](#features)
 - [Usage](#usage)
 - [Running LONS-C2](#running-lons-c2)
-
+  - [Selecting a session](#selecting-a-session)
+  - [Running a system command](#running-a-system-command)
+  - [Display network information](#display-network-information)
 
 ## Introduction
 **Listener-Oriented Network Server (LONS)** is a socket-based command and control server, designed to allow pentesters and security enthusiasts to centralize and manage in an easy manner terminal sessions in different machines.
