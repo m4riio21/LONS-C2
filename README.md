@@ -83,13 +83,13 @@ Available commands:
 
 		 upload_file <local_file_path> <remote_file_path> - Uploads the file given in the current local machine to the remote file path specified.
 
-		 download_file <remote_file_path> <local_file_path>- Downloads the file remote file path specified and saves it in the local file path given.
+		 download_file <remote_file_path> <local_file_path> - Downloads the file remote file path specified and saves it in the local file path given.
 
-		 screenshot <local_image_path>- Takes a screenshot in the client machine, and saves the image in the local path specified.
+		 screenshot <local_image_path> - Takes a screenshot in the client machine, and saves the image in the local path specified.
 
 		 netinfo - Displays the most relevant net information, such as open ports and network interfaces.
 
-		 run <command>- Runs the given command in the client and displays the information.
+		 run <command> - Runs the given command in the client and displays the information.
 
 		 back - Exit current session
 ```
