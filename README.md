@@ -14,12 +14,13 @@
 
 ## Features
 
-- **Tun interface** (No more SOCKS!)
-- Simple UI with *agent* selection and *network information*
-- Easy to use and setup
-- Automatic certificate configuration with Let's Encrypt
-- Performant (Multiplexing)
-- Does not require high privileges
-- Socket listening/binding on the *agent*
-- Multiple platforms supported for the *agent*
+- Simple CLI with client selection
+- Easy to use
+- Running commands in remote clients
+- Retrieve network information
+- Upload files to clients
+- Retrieve files from clients
+- Take screenshots from clients and visualize them
+
+
 
