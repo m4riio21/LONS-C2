@@ -47,10 +47,10 @@ class CommandLineInterface:
             if user_input == 'help':
                 print("Available commands:")
                 print(Fore.RED + "\n\t\t upload_file <local_file_path> <remote_file_path> " + Style.RESET_ALL + "- Uploads the file given in the current local machine to the remote file path specified.")
-                print(Fore.RED + "\n\t\t download_file <remote_file_path> <local_file_path>" + Style.RESET_ALL + "- Downloads the file remote file path specified and saves it in the local file path given.")
-                print(Fore.RED + "\n\t\t screenshot <local_image_path>" + Style.RESET_ALL + "- Takes a screenshot in the client machine, and saves the image in the local path specified.")
+                print(Fore.RED + "\n\t\t download_file <remote_file_path> <local_file_path> " + Style.RESET_ALL + "- Downloads the file remote file path specified and saves it in the local file path given.")
+                print(Fore.RED + "\n\t\t screenshot <local_image_path> " + Style.RESET_ALL + "- Takes a screenshot in the client machine, and saves the image in the local path specified.")
                 print(Fore.RED + "\n\t\t netinfo " + Style.RESET_ALL + "- Displays the most relevant net information, such as open ports and network interfaces.")
-                print(Fore.RED + "\n\t\t run <command>" + Style.RESET_ALL + "- Runs the given command in the client and displays the information.")
+                print(Fore.RED + "\n\t\t run <command> " + Style.RESET_ALL + "- Runs the given command in the client and displays the information.")
                 print(Fore.RED + "\n\t\t back " + Style.RESET_ALL + "- Exit current session")
                 print("")
 
