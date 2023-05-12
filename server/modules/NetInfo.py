@@ -1,6 +1,7 @@
 from Server import Server
 import ipaddress
 import re
+import time
 
 class NetInfo:
     """
@@ -8,7 +9,7 @@ class NetInfo:
     This class gathers network information from the remote client, processes it and shows the most important information.
     """
 
-    def __init__(self, currentSession):
+    def __init__(self, connection, client_os):
         """
         Initializes the Submodule with a name and description.
         """
@@ -16,20 +17,30 @@ class NetInfo:
         self.name = "NetInfo"
         self.description = "This module gathers network information from the remote client, processes it and shows the most important information."
 
-        self._currentSession = currentSession
+        self._connection = connection
+        self._client_os = client_os
 
-    def getOpenPorts(self, server, client):
+    def getOpenPorts(self):
         """
         Gathers the open ports from the remote client
         """
 
         #Send file contents and where to store it
-        server.sendTo(client, b'netstat')
-        data = server.recvFrom(client)
-        client = server.getClient(client)
-        client_os = client.getClientInfo()[3]
+        self._connection.send(b'netstat')
+        data = b''
+        time.sleep(0.5)
 
-        if client_os == "Windows":
+        #Get data
+        while True:
+            try:
+                chunk = self._connection.recv(1024)
+                if not chunk:
+                    break
+                data += chunk
+            except:
+                break
+
+        if self._client_os == "Windows":
             local_endpoints_column = '\n'.join(re.findall(r'\S+\s+(\S+:\d+)', data.decode()))
             ipv4_regex_windows = r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?::\d+)?\b'
             ipv4_endpoints = re.findall(ipv4_regex_windows, local_endpoints_column)
@@ -39,17 +50,27 @@ class NetInfo:
 
         return ipv4_endpoints
 
-    def getInterfaces(self, server, client):
+    def getInterfaces(self):
         """
         Gathers the network interfaces from the remote client
         """
 
-        server.sendTo(client, b'interfaces')
-        data = server.recvFrom(client)
-        client = server.getClient(client)
-        client_os = client.getClientInfo()[3]
+        self._connection.send(b'interfaces')
+        data = b''
+        time.sleep(0.5)
 
-        if client_os == "Windows":
+        # Get data
+        while True:
+            try:
+                chunk = self._connection.recv(1024)
+                if not chunk:
+                    break
+                data += chunk
+            except:
+                break
+
+
+        if self._client_os == "Windows":
             def remove_lines_after_netmask(input_string):
                 lines = input_string.split("\n")
                 output_lines = []
@@ -110,7 +131,6 @@ class NetInfo:
         ports = data[0]
         ifaces = data[1]
 
-
         all_ifaces = []
         normal_ifaces = []
         for port in ports:
@@ -141,8 +161,8 @@ class NetInfo:
         server = Server.getInstance()
 
         #Gather needed information
-        ports = self.getOpenPorts(server, self._currentSession - 1)
-        ifaces = self.getInterfaces(server, self._currentSession - 1)
+        ports = self.getOpenPorts()
+        ifaces = self.getInterfaces()
 
         #Make the printable string
         stdout = self.makeResults([ports, ifaces])

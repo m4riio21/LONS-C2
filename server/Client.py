@@ -12,45 +12,20 @@ class Client:
         connection (socket): The connection object created in the server with socket.accept().
     """
 
-    def __init__(self, connection, address, os):
+    def __init__(self, control_connection, connection, address, os):
         """Initializes a new instance of the Client class.
 
         Args:
+            control_connection (socket): The connection object to control the state of the client.
             connection (socket): The connection object created in the server with socket.accept().
             address (tuple): The address of the client as a tuple (host, port).
             os (String): A string representing the operative system of the client (Windows / Linux).
         """
+        self.control_connection = control_connection
         self.connection = connection
         self.host = address[0]
         self.port = address[1]
         self.os = os
-
-    def getClientOs(self):
-        """
-        Gets the OS of the client (Windows / Linux)
-        """
-        ttl = None
-        if os.name == 'nt':
-            result = subprocess.run(["ping", "-n", "1", f"{self.host}"], capture_output=True, text=True)
-            ttl_match = re.search(r"TTL=(\d+)", result.stdout)
-            ttl = ttl_match.group(1)
-        elif os.name == 'posix':
-            result = subprocess.run(["ping", "-c", "1", f"{self.host}"], capture_output=True, text=True)
-            ttl_match = re.search(r"TTL=(\d+)", result.stdout)
-            ttl = ttl_match.group(1)
-
-        ttl = int(ttl)
-
-        if ttl == None:
-            return None
-        else:
-            if ttl >= 127:
-                return "Windows"
-            else:
-                if ttl <= 65:
-                    return "Linux"
-                else:
-                    return None
 
     def __str__(self):
         """Returns a string representation of the client in the format host:port"""
@@ -62,4 +37,4 @@ class Client:
         Returns:
             list: A list containing the connection object, host IP and port number.
         """
-        return [self.connection, self.host, self.port, self.os]
+        return [self.control_connection, self.connection, self.host, self.port, self.os]

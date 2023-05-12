@@ -4,7 +4,6 @@ import threading
 import select
 import time
 from Client import Client
-from NetworkDataHandler import NetworkDataHandler
 
 class Server:
     """A class representing the Server that will handle the socket connections with the clients.
@@ -23,9 +22,9 @@ class Server:
             raise ValueError("An instance of the Server class already exists.")
         else:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.control_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.settimeout(10)
             self.clients = []
-            self.sessions = {}
             self.listening = False
             self.server_thread = None
             self.host = host
@@ -46,7 +45,9 @@ class Server:
             while self.listening:
                 try:
                     connection, client_endpoint = self.socket.accept()
-                    data = connection.recv(3)
+                    connection.settimeout(1)
+                    control_connection, client_endpoint_control = self.control_socket.accept()
+                    data = control_connection.recv(3)
                 except socket.timeout:
                     # check for stop flag periodically while waiting for connections
                     if not self.listening:
@@ -57,8 +58,7 @@ class Server:
                 elif data == b'LIN':
                     client_os = 'Linux'
 
-                new_client = Client(connection, client_endpoint, client_os)
-                self.sessions[new_client] = connection
+                new_client = Client(control_connection, connection, client_endpoint, client_os)
                 self.clients.append(new_client)
 
                 print("Client #{} - CONNECTED <{}:{}>".format(len(self.clients),client_endpoint[0],client_endpoint[1]))
@@ -69,11 +69,11 @@ class Server:
                 time.sleep(1)
 
                 for client in self.clients:
-                    connection = self.sessions[client]
-                    connection.settimeout(1)
+                    control_connection = client.getClientInfo()[0]
+                    control_connection.settimeout(1)
                     try:
                         # Check if each client connection is still active
-                        data = connection.recv(1024)
+                        data = control_connection.recv(1024)
                         if not data:
                             self.clients.remove(client)
                             print(f"Connection with client {client} has been closed")
@@ -83,10 +83,13 @@ class Server:
 
 
         endpoint = (self.host, self.port)
+        control_endpoint = (self.host, 65000)
         self.socket.bind(endpoint)
+        self.control_socket.bind(control_endpoint)
         print("Server listening in {}:{}...".format(self.host, self.port))
 
         self.socket.listen()
+        self.control_socket.listen()
         self.listening = True
 
         self.server_thread = threading.Thread(target=handle_client_connection)
@@ -101,6 +104,7 @@ class Server:
         self.server_thread.join()
         self.disconnected_thread.join()
         self.socket.close()
+        self.control_socket.close()
         print(Fore.RED + "Server successfully stopped!" + Style.RESET_ALL)
 
     def getClients(self):
@@ -114,46 +118,20 @@ class Server:
     def getClient(self, client_pos):
         return self.clients[client_pos]
 
+    def getConnection(self, client_pos):
+        """Returns a Socket connection object given a position in the Clients array."""
+        return self.clients[client_pos].getClientInfo()[1]
+
+
     def deleteClient(self, pos):
         """Deletes a client based on position in self.clients"""
         c = self.clients[pos - 1].getClientInfo()
 
         #Get connection
         c[0].close()
+        c[1].close()
 
         #Remove client from the array
         del self.clients[pos - 1]
-
-    def sendTo(self, client_pos, data):
-        """Sends data to a specific client.
-
-        Args:
-            client (Client): The client to send the data to.
-            data (bytes): The data to send through the socket.
-        """
-        client = self.clients[client_pos]
-        connection = self.sessions[client]
-        connection.send(data)
-
-    def recvFrom(self, client):
-        """Receives data from a specific client.
-
-        Args:
-            client (Client): The client to receive the data from.
-
-        Returns:
-            bytes: The data received through the socket.
-        """
-        connection = self.sessions[self.clients[client]]
-        data = b''
-        while True:
-            try:
-                chunk = connection.recv(1024)
-                if not chunk:
-                    break
-                data += chunk
-            except:
-                break
-        return data
 
 
