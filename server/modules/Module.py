@@ -1,6 +1,8 @@
 class Module:
     """
     Abstract class representing a module.
+
+    This class is a template for any desired module to implement.
     """
 
     def __init__(self, name: str, description: str):

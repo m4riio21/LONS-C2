@@ -7,6 +7,10 @@ class NetInfo:
     """
     Represents a Submodule that extends the Module class.
     This class gathers network information from the remote client, processes it and shows the most important information.
+
+        Attributes:
+        connection (socket): The connection object created in the server with socket.accept() where data will be sent and received.
+        client_os (str): A string containing the Operative System of the remote client for logic purposes (Windows/Linux).
     """
 
     def __init__(self, connection, client_os):

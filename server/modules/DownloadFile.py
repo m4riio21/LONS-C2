@@ -5,6 +5,12 @@ class DownloadFile:
     """
     Represents a Submodule that extends the Module class.
     This class handles the modular functionality of downloading a file from the client to the server
+
+        Attributes:
+        connection (socket): The connection object created in the server with socket.accept() where data will be sent and received.
+        remote_file (str): The remote file that will be retrieved.
+        local_file (str): The local file where the contents will be stored.
+
     """
 
     def __init__(self, connection, remote_file, local_file):

@@ -18,15 +18,16 @@ class CommandLineInterface:
 
     Attributes:
         currentSession (int): Number of the current session the user is managing.
-        commandHistory (String[]): Historic of all the commands ran by the user.
+        specified_port (int): Optional argument to indicate the port to bind. By default 1337.
     """
 
-    def __init__(self, currentSession=None):
+    def __init__(self, specified_port=1337, currentSession=None):
         self._currentSession = currentSession
+        self.specified_port = specified_port
 
     def start(self):
         """Starts the command-line interface logic"""
-        self.server = Server.getInstance()
+        self.server = Server.getInstance("0.0.0.0", self.specified_port)
         self.server.start()
         self.commandHandler()
         init() # Colorama

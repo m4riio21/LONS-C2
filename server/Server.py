@@ -108,7 +108,7 @@ class Server:
         print(Fore.RED + "Server successfully stopped!" + Style.RESET_ALL)
 
     def getClients(self):
-        """Returns the array of active clients"""
+        """Returns the array of active clients with the relevant information of each client"""
         ret = []
         for c in self.clients:
             ret.append(c.getClientInfo())
@@ -116,10 +116,11 @@ class Server:
         return ret
 
     def getClient(self, client_pos):
+        """Returns the Client object given a position in the self.clients array"""
         return self.clients[client_pos]
 
     def getConnection(self, client_pos):
-        """Returns a Socket connection object given a position in the Clients array."""
+        """Returns a Socket connection object given a position in the self.clients array."""
         return self.clients[client_pos].getClientInfo()[1]
 
 

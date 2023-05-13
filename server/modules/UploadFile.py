@@ -1,11 +1,15 @@
 from Server import Server
-import base64
-import struct
 
 class UploadFile:
     """
     Represents a Submodule that extends the Module class.
     This class handles the modular functionality of uploading a file from the server to the client
+
+        Attributes:
+        connection (socket): The connection object created in the server with socket.accept() where data will be sent and received.
+        local_file (str): The local file that will be uploaded to the client.
+        remote_file (str): The remote file location where the file contents will be saved.
+
     """
 
     def __init__(self, connection, local_file, remote_file):

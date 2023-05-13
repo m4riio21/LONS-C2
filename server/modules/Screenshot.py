@@ -5,6 +5,10 @@ class Screenshot:
     """
     Represents a Submodule that extends the Module class.
     This class handles the modular functionality of downloading a screenshot taken by the client.
+
+        Attributes:
+        connection (socket): The connection object created in the server with socket.accept() where data will be sent and received.
+        local_path (str): The local path where the screenshot will be saved.
     """
 
     def __init__(self, connection, local_path):
