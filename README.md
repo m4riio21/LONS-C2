@@ -1,4 +1,4 @@
-# LONS-C2
+# LONS-C2 : socket-based command and control server
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=green) \
 ![Banner](https://github.com/m4riio21/LONS-C2/blob/e275c02506acca5d114b07dbff4a498124173bb4/resources/LOGO.png)
 
