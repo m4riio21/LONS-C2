@@ -12,6 +12,7 @@
   - [Selecting a session](#selecting-a-session)
   - [Running a system command](#running-a-system-command)
   - [Display network information](#display-network-information)
+- [License](#license)
 
 ## Introduction
 **Listener-Oriented Network Server (LONS)** is a socket-based command and control server, designed to allow pentesters and security enthusiasts to centralize and manage in an easy manner terminal sessions in different machines.
@@ -127,4 +128,5 @@ Interface in network range 192.168.79.0/24 with IP address 192.168.79.1
 Interface in network range 192.168.0.0/24 with IP address 192.168.0.7
 ```
 
-
+## License
+This project is under the GPL-3.0 License - see the [LICENSE](LICENSE) for more details
