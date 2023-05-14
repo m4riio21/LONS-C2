@@ -12,6 +12,7 @@
   - [Selecting a session](#selecting-a-session)
   - [Running a system command](#running-a-system-command)
   - [Display network information](#display-network-information)
+- [Usage Demo](#usage-demo)
 - [License](#license)
 
 ## Introduction
