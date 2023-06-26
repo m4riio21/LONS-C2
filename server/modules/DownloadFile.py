@@ -36,7 +36,10 @@ class DownloadFile:
         Receives the file contents from the socket and writes it into the local file
         """
 
-        file = open(local_file, 'wb')
+        try:
+            file = open(local_file, 'wb')
+        except:
+            return False
         chunk = self._connection.recv(1024)
         while chunk:
             try:
@@ -60,8 +63,17 @@ class DownloadFile:
 
         # Gets the file contents and saves it in the local path
         code = self.downloadFile(self._local_file)
-        print(code)
+
+        err = b""
         if code:
+            try:
+                err = self._connection.recv(10)
+            except:
+                pass
+
+            if b"error" in err:
+                return f"File {self._remote_file} couldn't be opened"
+
             return f"Done! File {self._remote_file} has been downloaded and saved to {self._local_file}."
         else:
             return f"You don't have permission to save the file to {self._local_file}"

